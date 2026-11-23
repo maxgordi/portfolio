@@ -1,0 +1,58 @@
+# Fictional candidate for the demo. Replace with your own CV (same format).
+lang: en
+name: Alex Example
+headline: AI Engineer — LLM agents, RAG, business process automation
+contacts:
+  phone: +000 00 000 0000
+  email: alex@example.com
+  linkedin: linkedin.com/in/example
+  github: github.com/example
+  location: Remote
+summary: 4 years in automation and 2 years with LLMs. I build RAG assistants over
+  internal documents, Telegram bots and n8n workflows that remove manual work.
+skills_title: Skills
+skills:
+- id: s1
+  title: LLM & RAG
+  text: OpenAI / Anthropic API, Ollama, LangChain, pgvector, Qdrant, prompt engineering,
+    оцінка якості відповідей
+- id: s2
+  title: Automation
+  text: n8n, Make, Telegram Bot API, вебхуки, Google Workspace API
+- id: s3
+  title: Development
+  text: Python, FastAPI, SQL, Docker, Git, Playwright
+experience_title: Experience
+experience:
+- id: e1
+  role: AI Automation Engineer
+  company: Acme Logistics (fictional)
+  meta: remote
+  period: 2024 — now
+  bullets:
+  - id: b1
+    text: Built a RAG assistant over an instruction base, answers cite the source
+  - id: b2
+    text: Moved 12 manual processes to n8n, saving the team about 30 hours a week
+  tech: Python, n8n, PostgreSQL, Docker
+- id: e2
+  role: Python Developer
+  company: Example Studio (fictional)
+  meta: Ukraine
+  period: 2021 — 2024
+  bullets:
+  - id: b3
+    text: Scrapers and REST API integrations for e-commerce clients
+  tech: Python, Selenium, REST
+education_title: Education
+education:
+- degree: BSc, Computer Science
+  school: Example University
+  meta: ''
+  period: 2017 — 2021
+certificates_title: Certificates
+certificates: []
+languages_title: Languages
+languages:
+- Ukrainian — native
+- English — B2

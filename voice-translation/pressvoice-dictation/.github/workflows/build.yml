@@ -1,0 +1,268 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    # windows-2022 is the Windows 10 (21H2) code base, windows-2025 is
+    # Windows 11 (24H2).
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-2025]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-*.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-qt.txt -r requirements-dev.txt
+
+      - name: Tests (unit + end-to-end with real keyboard hook and paste)
+        run: python -m pytest -v -rs
+
+      - name: Build app (PyInstaller)
+        run: pyinstaller --noconfirm --clean packaging/pressvoice.spec
+
+      - name: Self-test of the built exe
+        run: |
+          $p = Start-Process dist\PressVoice\PressVoice.exe `
+                 -ArgumentList '--selftest', "$PWD\selftest-build.json" -Wait -PassThru
+          Get-Content selftest-build.json
+          if ($p.ExitCode -ne 0) { throw "selftest failed ($($p.ExitCode))" }
+
+      - name: Build installer (Inno Setup)
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+          }
+          python tools/gen_installer_i18n.py
+          $version = python -c "from version import __version__; print(__version__)"
+          & $iscc "/DMyAppVersion=$version" packaging\installer.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed" }
+          Get-ChildItem dist\PressVoice-Setup-*.exe | Format-Table Name, Length
+
+      - name: Install silently, check, self-test, uninstall
+        run: |
+          $setup = (Get-ChildItem dist\PressVoice-Setup-*.exe).FullName
+          # No /TASKS: the preselected options are what a normal install gets.
+          $p = Start-Process $setup -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', `
+                 '/NORESTART', "/LOG=$PWD\install.log" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "installer exit $($p.ExitCode)" }
+
+          $dir = "$env:LOCALAPPDATA\Programs\PressVoice"
+          $exe = "$dir\PressVoice.exe"
+          if (-not (Test-Path $exe)) { throw "not installed at $exe" }
+          $run = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run').PressVoice
+          if ($run -ne "`"$exe`"") { throw "autostart entry wrong: $run" }
+          $lnk = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\PressVoice.lnk"
+          if (-not (Test-Path $lnk)) { throw "no Start menu shortcut" }
+          $desk = Join-Path ([Environment]::GetFolderPath("Desktop")) "PressVoice.lnk"
+          if (-not (Test-Path $desk)) { throw "no desktop shortcut (should be on by default)" }
+          Select-String -Path install.log -Pattern "language" | Select-Object -First 3
+
+          $p = Start-Process $exe -ArgumentList '--selftest', "$PWD\selftest-installed.json" -Wait -PassThru
+          Get-Content selftest-installed.json
+          if ($p.ExitCode -ne 0) { throw "installed selftest failed" }
+
+          $p = Start-Process "$dir\unins000.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait -PassThru
+          Start-Sleep -Seconds 3   # the uninstaller finishes from a temp copy
+          if (Test-Path $exe) { throw "exe still present after uninstall" }
+          if ((Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run').PressVoice) {
+            throw "autostart entry left behind"
+          }
+          if (Test-Path $lnk) { throw "shortcut left behind" }
+          if (Test-Path $desk) { throw "desktop shortcut left behind" }
+          "Install / uninstall OK"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-${{ matrix.os }}
+          path: |
+            dist/PressVoice-Setup-*.exe
+            selftest-*.json
+            install.log
+          if-no-files-found: ignore
+
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-*.txt
+
+      - name: System packages (PortAudio, Xvfb, Qt xcb deps)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libportaudio2 xvfb xauth libegl1 libgl1 libfontconfig1 libdbus-1-3 \
+            libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 \
+            libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 \
+            libxcb-xinerama0 libxcb-xkb1 libfuse2
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-qt.txt -r requirements-dev.txt
+
+      - name: Tests (under Xvfb)
+        run: xvfb-run -a -s "-screen 0 1280x1024x24 +extension RECORD" python -m pytest -v -rs
+
+      - name: Build app (PyInstaller) and AppImage
+        run: |
+          pyinstaller --noconfirm --clean packaging/pressvoice.spec
+          packaging/linux/build_appimage.sh
+
+      - name: Self-test of the AppImage
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+        run: |
+          app=$(ls dist/PressVoice-*-x86_64.AppImage)
+          set +e
+          xvfb-run -a -s "-screen 0 1280x1024x24 +extension RECORD" "$app" --selftest "$PWD/selftest-linux.json"
+          code=$?
+          set -e
+          cat selftest-linux.json
+          exit $code
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linux
+          path: |
+            dist/PressVoice-*.AppImage
+            selftest-linux.json
+          if-no-files-found: ignore
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-15-intel]   # Apple Silicon, Intel
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-mac.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-mac.txt pyinstaller==6.22.3 \
+            pyinstaller-hooks-contrib==2026.8 pytest==9.1.1
+
+      - name: Unit tests (shared core)
+        run: python -m pytest -v -rs tests/test_transcribe.py tests/test_pipeline.py tests/test_storage.py tests/test_audio.py
+
+      - name: Build PressVoice.app
+        run: pyinstaller --noconfirm --clean packaging/macos/pressvoice_mac.spec
+
+      - name: Sign with the PressVoice certificate
+        # A fixed signing identity keeps macOS's Accessibility permission
+        # (needed to paste) valid across updates; ad-hoc signatures don't.
+        env:
+          P12_BASE64: ${{ secrets.MACOS_SIGNING_P12 }}
+          PRESSVOICE_SIGN_PASSWORD: ${{ secrets.MACOS_SIGNING_PASSWORD }}
+        run: |
+          if [ -n "$P12_BASE64" ]; then
+            echo "$P12_BASE64" | base64 --decode > "$RUNNER_TEMP/sign.p12"
+            export PRESSVOICE_SIGN_P12="$RUNNER_TEMP/sign.p12"
+          fi
+          packaging/macos/sign_app.sh
+          if [ -n "$P12_BASE64" ]; then
+            codesign -dr - dist/PressVoice.app 2>&1 | grep -q "certificate root = H\"${{ vars.MACOS_SIGNING_CERT_SHA1 }}\"" \
+              || { echo "not signed with the PressVoice certificate"; exit 1; }
+          fi
+          rm -f "$RUNNER_TEMP/sign.p12"
+
+      - name: Self-test of the built app
+        run: |
+          python -c "from ApplicationServices import AXIsProcessTrusted as t; print('Accessibility for this runner:', t())"
+          set +e
+          dist/PressVoice.app/Contents/MacOS/PressVoice --selftest "$PWD/selftest-mac-build.json"
+          code=$?
+          set -e
+          cat selftest-mac-build.json
+          exit $code
+
+      - name: Build disk image
+        run: packaging/macos/build_dmg.sh
+
+      - name: Install from the disk image (drag to Applications) and self-test
+        run: |
+          dmg=$(ls dist/PressVoice-*.dmg)
+          mnt=/tmp/pressvoice-dmg
+          hdiutil attach -nobrowse -readonly -mountpoint "$mnt" "$dmg"
+          ls -la "$mnt"
+          test -L "$mnt/Applications"
+          ditto "$mnt/PressVoice.app" /Applications/PressVoice.app
+          hdiutil detach "$mnt"
+          set +e
+          /Applications/PressVoice.app/Contents/MacOS/PressVoice --selftest "$PWD/selftest-mac-installed.json"
+          code=$?
+          set -e
+          cat selftest-mac-installed.json
+          exit $code
+
+      - name: End-to-end (real app, hotkey → paste into another app)
+        env:
+          PRESSVOICE_MAC_APP: /Applications/PressVoice.app
+        run: python -m pytest -v -rs tests/test_e2e_macos.py
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-${{ matrix.os }}
+          path: |
+            dist/PressVoice-*.dmg
+            selftest-mac-*.json
+          if-no-files-found: ignore
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, linux, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
+            --title "PressVoice ${GITHUB_REF_NAME#v}" --generate-notes \
+            artifacts/windows-windows-2022/dist/PressVoice-Setup-*.exe \
+            artifacts/linux/dist/PressVoice-*.AppImage \
+            artifacts/macos-macos-15/dist/PressVoice-*.dmg \
+            artifacts/macos-macos-15-intel/dist/PressVoice-*.dmg

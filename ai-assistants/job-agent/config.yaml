@@ -1,0 +1,124 @@
+# ── Головні налаштування агента. Після зміни: docker compose restart ──
+# Частину можна міняти на льоту командами в Telegram (/minscore, /limit, /pause, /auto).
+
+timezone: Europe/Kyiv
+
+# recommend = лише присилає в Telegram картки вакансій з описом і готовим листом (відгукуєшся сам)
+# apply     = ще й відгукується автоматично через браузер
+mode: recommend
+
+# Коли сканувати (час Києва). Ранок — коли публікують найбільше вакансій.
+scan_times: ["09:15", "13:15", "18:15"]
+
+# ── Джерела ──
+sources:
+  djinni:
+    enabled: true
+    feeds:
+      - https://djinni.co/jobs/rss/?primary_keyword=ML+AI
+      - https://djinni.co/jobs/rss/?primary_keyword=Python&keywords=LLM
+    apply: browser          # browser = агент відгукується сам; manual = лише посилання у звіті
+  dou:
+    enabled: true
+    feeds:
+      - https://jobs.dou.ua/vacancies/feeds/?category=AI%2FML
+      - https://jobs.dou.ua/vacancies/feeds/?category=Python&search=LLM
+    apply: browser
+  robota:
+    enabled: true
+    queries: ["AI engineer", "LLM", "n8n", "AI розробник", "автоматизація AI", "ШІ інженер"]
+    apply: browser
+  workua:
+    enabled: true
+    queries: ["ai engineer", "llm", "n8n", "ai розробник"]
+    apply: browser
+
+# ── Фільтр ДО LLM (безкоштовно відсіює сміття) ──
+prefilter:
+  title_include: ["ai", "ml", "llm", "genai", "gen ai", "rag", "agent", "агент", "n8n",
+                  "automation", "автоматиз", "machine learning", "prompt", "штучн", "ші", "nlp",
+                  "chatbot", "чат-бот", "voice"]
+  # include — збіг з початку слова (стем: "автоматиз" ловить "автоматизація");
+  # exclude — лише ціле слово ("intern" НЕ ловить "internal").
+  title_exclude: ["qa", "tester", "тестувальник", "sales", "recruiter", "рекрутер",
+                  "annotator", "аннотатор", "intern", "стажер", "head of", "director", "директор",
+                  "c++", ".net", "java", "ios", "android", "designer", "дизайнер", "marketing",
+                  "маркетолог", "data annotation", "teacher", "викладач", "tutor"]
+  max_age_days: 21          # вакансії старші за 3 тижні ігноруємо (далі і так приходять лише нові)
+
+# Компанії/галузі, куди НЕ відгукуємось (приклад). Порівняння без регістру, по входженню в назву.
+# Додатково LLM позначає казино, ставки й криптовалюти (is_excluded) — такі вакансії теж відсіюються.
+blacklist_companies: ["casino", "казино", "gambling", "гемблінг", "betting", "беттінг", "crypto", "крипто"]
+
+# ── Оцінка ──
+scoring:
+  letter_style: >-
+    Пиши як жива людина, а не як ШІ. Максимум 4-5 коротких речень, звичайна розмовна ділова мова.
+    Без списків, без двокрапок і крапок з комою в переліках, без шаблонних зворотів («ідеальний
+    кандидат», «із цікавістю ознайомився», «ваші цілі близькі до моїх»), без тире через слово.
+    Починай одразу зі суті, не з вітання на пів рядка. Один-два найрелевантніші факти з резюме,
+    простими словами, цифри лише справжні. Рекрутер має прочитати за 15 секунд. Англійські листи
+    — простою англійською рівня B1 (короткі речення, прості слова), щоб кандидат міг легко
+    підтримати розмову на співбесіді.
+  min_score_notify: 65      # нижче — не показуємо
+  max_per_cycle: 60         # максимум LLM-оцінок за один скан (контроль витрат)
+  parallel: 4               # скільки вакансій оцінювати одночасно      # нижче — навіть не показуємо в Telegram
+  big_company_bonus:        # бонус до балу за розмір компанії (кількість спеціалістів, з DOU)
+    1000: 10
+    200: 6
+    80: 3
+  candidate_prefs: >-
+    Приклад побажань (заміни на свої). Повністю віддалено — сильний плюс; гібрид — нейтрально;
+    лише офіс — поставь remote="office" і score не вище 20. Англійська кандидата B2: вакансії з
+    вимогою C1+ або постійними дзвінками з клієнтами англійською — мінус. Продуктові компанії та
+    великі команди — плюс; Senior з вимогою 7+ років — мінус; ролі суто ML research (навчання
+    моделей) — мінус; LLM/RAG/агенти/автоматизація/n8n/інтеграції — сильний плюс.
+
+# ── Відгуки ──
+apply:
+  daily_limit: 15           # не більше N відгуків на день (захист акаунтів)
+  same_company_cooldown_days: 30
+  auto_apply: true          # відгукується сам на вакансії з балом >= auto_min_score
+  auto_min_score: 70
+  dry_run: true             # true = все готує, але НЕ натискає «Надіслати». Вимкни після тесту.
+  delay_seconds: [40, 120]  # випадкова пауза між відгуками
+
+# ── Резюме (твої готові файли; у репозиторії — вигаданий приклад, без змін під кожну вакансію) ──
+cv:
+  language: auto            # auto = мова вакансії (EN-вакансія → англ. CV); uk / en = завжди одна
+  files:
+    uk: data/cv/cv_uk.pdf       # поклади сюди свої PDF (у репозиторії їх немає)
+    en: data/cv/cv_en.pdf
+  text: data/cv/base_cv.uk.yaml   # текст резюме для LLM-оцінки і листів
+
+# ── Селектори для браузера (якщо сайт змінить верстку — правиш тут, не в коді) ──
+selectors:
+  djinni:
+    open_form: "button:has-text('Відгукнутися'), button:has-text('Apply for the job'), a:has-text('Відгукнутися'), a:has-text('Apply')"
+    message: "textarea[name='message'], form textarea"
+    file: "input[type='file']"
+    submit: "button[type='submit']:has-text('Відгукнутися'), button[type='submit']:has-text('Apply'), button[type='submit']:has-text('Надіслати'), button[type='submit']:has-text('Send')"
+    success: "text=/Ви відгукнулися|You applied|відгук надіслано|Application sent/i"
+    logged_in: "a[href*='/my/'], a[href*='logout']"
+  dou:
+    open_form: ".reply-btn, a:has-text('Відгукнутися')"
+    external: ".replied-external"
+    message: "#reply_descr, textarea[name='descr'], .reply textarea"
+    file: "input[type='file']"
+    submit: ".replied-btn.send, button:has-text('Надіслати')"
+    success: "text=/Ваш відгук|відгук надіслано|Ви вже відгукнулися/i"
+    logged_in: "a[href*='logout'], .g-avatar"
+  robota:
+    open_form: "button:has-text('Відгукнутися'), a:has-text('Відгукнутися')"
+    message: "textarea"
+    file: "input[type='file']"
+    submit: "button:has-text('Відправити'), button:has-text('Надіслати'), button:has-text('Відгукнутися')"
+    success: "text=/Ви відгукнулися|Відгук надіслано|резюме надіслано/i"
+    logged_in: "[data-id='header-user'], a[href*='/my']"
+  workua:
+    open_form: "a:has-text('Відгукнутися'), button:has-text('Відгукнутися')"
+    message: "textarea[name='letter'], textarea"
+    file: "input[type='file']"
+    submit: "button[type='submit']:has-text('Надіслати'), button[type='submit']:has-text('Відгукнутися')"
+    success: "text=/Ви відгукнулися|Резюме надіслано|відгук надіслано/i"
+    logged_in: "a[href*='/my/'], a[href*='logout']"

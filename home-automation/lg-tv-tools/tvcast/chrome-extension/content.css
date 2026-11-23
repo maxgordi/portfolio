@@ -1,0 +1,69 @@
+/* Кнопка в панели плеера: как соседние кнопки YouTube */
+.ytp-button.tvcast-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  vertical-align: top;
+}
+.ytp-button.tvcast-btn svg {
+  width: 24px;
+  height: 24px;
+}
+.tvcast-btn.tvcast-busy svg,
+.tvcast-float.tvcast-busy svg {
+  animation: tvcast-pulse 1s ease-in-out infinite;
+}
+@keyframes tvcast-pulse {
+  50% { opacity: 0.35; }
+}
+
+/* Плавающая кнопка на Shorts */
+.tvcast-float {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(15, 15, 15, 0.88);
+  color: #fff;
+  font: 500 14px/1 Roboto, Arial, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+.tvcast-float:hover {
+  background: #cc0000;
+}
+
+/* Уведомление */
+#tvcast-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  z-index: 2147483001;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: #202124;
+  color: #fff;
+  font: 400 14px/1.45 Roboto, Arial, sans-serif;
+  white-space: pre-line;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+  transform: translate(-50%, 20px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+#tvcast-toast.tvcast-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+  cursor: pointer;
+}
+#tvcast-toast.tvcast-ok { background: #137333; }
+#tvcast-toast.tvcast-err { background: #b3261e; }

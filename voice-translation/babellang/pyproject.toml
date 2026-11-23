@@ -1,0 +1,38 @@
+[project]
+name = "babellang"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "sounddevice>=0.5.0",
+    "numpy>=1.26",
+    "torch>=2.2",
+    "torchaudio>=2.2",
+    "openai>=1.30",
+    "elevenlabs>=2.40",
+    "keyring>=25.0",
+    "websockets>=12.0",
+    "aiohttp>=3.9",
+    "rich>=13.0",
+    "customtkinter>=5.2",
+    "pynput>=1.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+
+[project.scripts]
+babellang = "babellang.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["babellang*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

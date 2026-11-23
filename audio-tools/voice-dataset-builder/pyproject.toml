@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voiceset"
+version = "0.1.0"
+description = "Voice Dataset Builder: набор 2:00 для Suno Voices и датасет для RVC из сухой записи пения"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy", "scipy", "soundfile", "librosa", "pyloudnorm", "praat-parselmouth",
+  "pandas", "pyarrow", "matplotlib", "jinja2", "typer", "pydantic", "pyyaml",
+  "torch", "torchcrepe", "silero-vad",
+]
+
+[project.optional-dependencies]
+ecapa = ["speechbrain"]
+asr = ["faster-whisper"]
+dev = ["pytest"]
+
+[project.scripts]
+voiceset = "voiceset.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["voiceset*"]
+
+[tool.setuptools.package-data]
+voiceset = ["default_config.yaml", "report/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

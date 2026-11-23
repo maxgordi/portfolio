@@ -1,0 +1,6 @@
+* text=auto
+*.bat text eol=crlf
+*.sh text eol=lf
+packaging/linux/AppRun text eol=lf
+*.ico binary
+*.png binary

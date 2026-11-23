@@ -1,0 +1,44 @@
+# Хмарний запуск: GitHub сам запускає скан 3 рази на день, комп'ютер не потрібен.
+# Ручний запуск: GitHub → Actions → scan → Run workflow (працює і з телефона).
+name: scan
+on:
+  schedule:
+    # Час у UTC. Київ зимою UTC+2 → 09:15 / 13:15 / 18:15. Влітку (UTC+3) зсунь на годину раніше.
+    - cron: "15 7,11,16 * * *"
+  workflow_dispatch:
+
+concurrency: scan
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: Scan and send to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          LLM_PROVIDER: anthropic
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: claude-opus-5-5
+          LLM_EFFORT: medium
+        run: python -m app.main report
+      - name: Save state (seen vacancies)
+        if: always()
+        run: |
+          git config user.name "job-agent"
+          git config user.email "job-agent@users.noreply.github.com"
+          git add -f data/jobs.db
+          git diff --cached --quiet || git commit -m "state: $(date -u +%F_%H%M) [skip ci]"
+          git push

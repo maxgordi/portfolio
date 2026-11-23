@@ -1,0 +1,8 @@
+# The WebRTC echo canceller (livekit's libwebrtc) is a static library with
+# Objective-C categories; without -ObjC the linker drops them and the program
+# aborts at launch ("+[NSString stringForStdString:]: unrecognized selector").
+[target.aarch64-apple-darwin]
+rustflags = ["-C", "link-args=-ObjC"]
+
+[target.x86_64-apple-darwin]
+rustflags = ["-C", "link-args=-ObjC"]

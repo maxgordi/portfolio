@@ -1,0 +1,39 @@
+{
+    "platforms": [
+        {
+            "name": "Example Platform 1",
+            "url": "https://platform-1.example.com/tenders",
+            "selector": ".tender-item",
+            "title_selector": ".tender-title",
+            "description_selector": ".tender-description"
+        },
+        {
+            "name": "Example Platform 2",
+            "url": "https://platform-2.example.com/tenders",
+            "selector": ".tender-list-item",
+            "title_selector": ".tender-title",
+            "description_selector": ".tender-text"
+        },
+        {
+            "name": "Example Platform 3",
+            "url": "https://platform-3.example.com/tenders",
+            "selector": ".tender-card",
+            "title_selector": ".tender-title",
+            "description_selector": ".tender-description"
+        },
+        {
+            "name": "Example Platform 4",
+            "url": "https://platform-4.example.com/tenders",
+            "selector": ".tender-row",
+            "title_selector": ".tender-title",
+            "description_selector": ".tender-details"
+        }
+    ],
+    "settings": {
+        "check_interval": 30,
+        "message_expiration": 180,
+        "duplicate_threshold": 0.9,
+        "max_retries": 3,
+        "retry_delay": 5
+    }
+}

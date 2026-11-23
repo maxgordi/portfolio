@@ -1,0 +1,40 @@
+[package]
+name = "pressvoice-live"
+version = "0.1.0"
+edition = "2024"
+description = "PressVoice Live — a push-to-talk interpreter in a small macOS window (Gemini Live Translate)"
+publish = false
+
+[dependencies]
+anyhow = "1.0.104"
+audioadapter-buffers = "5.2.0"
+base64 = "0.23.1"
+block2 = "0.6.2"
+chrono = { version = "0.4.45", features = ["serde"] }
+coreaudio-rs = "0.14.2"
+cpal = "0.18.2"
+eframe = "0.36.2"
+futures-util = { version = "0.3.34", features = ["sink"] }
+hound = "3.5.1"
+libc = "0.2"
+libwebrtc = "0.3.51"
+memmap2 = "0.9.11"
+objc2 = "0.6.5"
+objc2-app-kit = { version = "0.3.2", features = ["NSEvent", "NSRunningApplication", "NSWorkspace", "block2"] }
+objc2-core-audio = { version = "0.3.2", features = ["AudioHardware"] }
+objc2-core-foundation = { version = "0.3.2", features = ["CFString", "CFArray", "CFDictionary", "CFNumber"] }
+objc2-foundation = "0.3.2"
+parking_lot = "0.12.5"
+ringbuf = "0.5.2"
+rubato = "5.0.1"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+tokio = { version = "1.53.2", features = ["rt", "sync", "time", "macros", "net"] }
+tokio-tungstenite = { version = "0.30.0", features = ["native-tls"] }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+
+[dev-dependencies]
+skrifa = "0.44"

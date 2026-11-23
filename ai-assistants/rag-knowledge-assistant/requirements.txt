@@ -1,0 +1,8 @@
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+httpx==0.28.1
+pydantic==2.10.4
+qdrant-client==1.12.1
+langchain-text-splitters==0.3.4
+pymupdf==1.25.1
+# optional, for scanned PDFs: pytesseract + Pillow + tesseract-ocr with ukr/eng languages

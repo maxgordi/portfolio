@@ -1,0 +1,10 @@
+setuptools<80
+numpy>=1.24
+scipy>=1.10
+soundfile>=0.12
+librosa>=0.10
+numba>=0.58
+pyworld>=0.3.4
+pylibrb>=0.1.2
+PySide6>=6.6
+sounddevice>=0.4

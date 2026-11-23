@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "name": "На телевизор (LG)",
+  "version": "1.0.0",
+  "description": "Кнопка «На телевизор» на YouTube: видео сразу играет в приложении YouTube на телевизоре LG с той же секунды.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA08Ob/0yBfw05smdjQE84uV6L2f9HALLseZGeBV24tnVyXbvHdl3QrO2LkIH+buY4AotPUprxyZeFEbBG/hSXpVx8wj+y+IFmlxxpdM03F13OSmNxxyHDE4NRD4Vg2BhW4o2gaVnjD2qW6PgKqtxguMJYwDD++nz2A74jKWKYAwYNWY0SfKbF1scmdjZ8sWIB35H81SPQoLt4wapsg00YotxtW6rC+h0ahS83Bwkqbeof+KpAdglU1+Z0U9S8Bi2VlaIYAqjADGyPrNJk6LwHQikt3vw4cP+z2Aov7R93cA2l4qr35zvdgCP2KnGtAWlDmVFXiKoB7+v5RUqTeiid2wIDAQAB",
+  "permissions": [
+    "nativeMessaging",
+    "contextMenus",
+    "alarms",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "На телевизор",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "commands": {
+    "cast-to-tv": {
+      "suggested_key": {
+        "default": "Alt+T",
+        "mac": "Alt+T"
+      },
+      "description": "Отправить текущее видео на телевизор"
+    }
+  }
+}

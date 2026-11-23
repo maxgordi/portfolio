@@ -1,0 +1,8 @@
+torch
+transformers
+soundfile
+numpy
+scipy
+librosa
+PySide6
+sounddevice

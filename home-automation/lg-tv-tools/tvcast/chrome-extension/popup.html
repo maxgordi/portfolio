@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>На телевизор</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <span id="dot" class="dot"></span>
+    <div>
+      <div id="title" class="title">Телевизор LG</div>
+      <div id="sub" class="sub">Проверяю…</div>
+    </div>
+  </header>
+
+  <button id="cast" class="primary" disabled>▶ Отправить это видео на ТВ</button>
+
+  <div class="row">
+    <button id="voldown" class="tv-on" title="Тише">🔉 −</button>
+    <div id="vol" class="vol">—</div>
+    <button id="volup" class="tv-on" title="Громче">🔊 +</button>
+  </div>
+
+  <button id="playpause" class="tv-on">⏯ Пауза / продолжить</button>
+  <button id="power">⏻ …</button>
+
+  <div id="msg" class="msg" hidden></div>
+
+  <footer>Горячая клавиша на YouTube: <b id="key">⌥T</b></footer>
+  <script src="popup.js"></script>
+</body>
+</html>

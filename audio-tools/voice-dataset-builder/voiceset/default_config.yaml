@@ -1,0 +1,70 @@
+# Все пороги и веса. Копия с реально использованными значениями кладётся в out/config.used.yaml
+seed: 42
+io: {sr: 48000, highpass_hz: 70}
+segment: {min_s: 1.5, max_s: 8.0, merge_gap_ms: 250, pad_ms: 40, min_split_ms: 120, vad: auto, energy_margin_db: 15}
+pitch:
+  engine: [rmvpe, torchcrepe, pyin]
+  hop_ms: 10
+  note_min_ms: 150
+  fmin: 60
+  fmax: 1200
+  median_frames: 5
+  rmvpe_weights: null        # путь к rmvpe.pt, если есть
+  crepe_model: tiny          # tiny | full
+  vibrato_band_hz: [4.0, 8.0]
+  jump_cents: 350
+  dropout_ms: [30, 120]
+delivery:
+  z_breathy: 0.5
+  z_power: 0.5
+  unsure_below: 0.3
+  knn_k: 3
+quality:
+  clip_run: 3
+  clip_level: 0.999
+  click_k: 25
+  click_min_abs: 0.05
+  snr_min_db: 25
+  reverb_tail_db: -20
+  reverb_margin_db: 6
+  break_rate_max: 1.5        # срывов в секунду
+  voiced_min: 0.35           # доля озвученных кадров
+  similarity_pctl_min: 5
+  similarity_z_min: -2.0
+speaker: {engine: auto, min_s: 2.0}     # auto | ecapa | mfcc
+asr: {enabled: false, model: small}
+suno:
+  length_s: 120.0
+  pool_min_s: 2.0
+  pool_max_s: 8.0
+  quotas: {normal: 0.70, power: 0.15, breathy: 0.15}
+  quota_tolerance: 0.05
+  max_song_share: 0.20
+  min_songs: 5
+  range_pctl: [2, 98]
+  edge_semitones: 3
+  edge_weight: 2.0
+  weights: {coverage: 1.0, quota: 0.8, quality: 0.5, similarity: 0.5, song_overuse: 1.0}
+  local_search_passes: 3
+  pair_candidates: 60
+  order_tries: 400
+  assemble:
+    target_lufs: -20
+    fade_ms: 15
+    gap_ms: 60
+    gap_range_ms: [0, 200]
+    peak_dbfs: -3
+    compress: true
+    comp_threshold_db: -26
+    comp_ratio: 2.0
+    lowshelf_hz: 120
+    lowshelf_db: -12
+rvc:
+  sr: 48000
+  target_lufs: -20
+  highpass_hz: 70
+  clip_min_s: 2.0
+  clip_max_s: 12.0
+  merge_gap_s: 1.0
+  trim_margin_db: 6
+  min_total_s: 600

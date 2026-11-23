@@ -1,0 +1,8 @@
+.env
+data/jobs.db
+data/sessions/*.json
+data/output/
+__pycache__/
+sessions/
+data/cv/*.pdf
+data/cv/*.docx

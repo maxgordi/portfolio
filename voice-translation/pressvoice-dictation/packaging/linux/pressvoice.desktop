@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=PressVoice
+Comment=Hold a key, speak, and the text is typed where your cursor is
+Exec=PressVoice
+Icon=pressvoice
+Categories=Utility;
+Terminal=false
+StartupNotify=false

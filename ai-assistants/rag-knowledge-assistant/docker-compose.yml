@@ -1,0 +1,25 @@
+# Closed local setup: API + Ollama + Qdrant. Nothing leaves the server.
+services:
+  api:
+    build: .
+    env_file: .env
+    ports: ["127.0.0.1:8000:8000"]
+    volumes: ["./knowledge_base:/app/knowledge_base:ro"]
+    depends_on: [ollama, qdrant]
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes: ["ollama:/root/.ollama"]
+    restart: unless-stopped
+    # Uncomment on a server with an NVIDIA GPU:
+    # deploy: {resources: {reservations: {devices: [{driver: nvidia, count: all, capabilities: [gpu]}]}}}
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    volumes: ["qdrant:/qdrant/storage"]
+    restart: unless-stopped
+
+volumes:
+  ollama:
+  qdrant:

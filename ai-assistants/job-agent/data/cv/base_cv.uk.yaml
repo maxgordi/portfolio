@@ -1,0 +1,58 @@
+# Вигаданий кандидат для демо. Заміни на своє резюме (той самий формат).
+lang: uk
+name: Алекс Приклад
+headline: AI Engineer — LLM-агенти, RAG, автоматизація бізнес-процесів
+contacts:
+  phone: "+000 00 000 0000"
+  email: alex@example.com
+  linkedin: linkedin.com/in/example
+  github: github.com/example
+  location: Віддалено
+summary: >-
+  4 роки в автоматизації та 2 роки з LLM. Будую RAG-асистентів над внутрішніми документами,
+  Telegram-боти і n8n-воркфлоу, що прибирають ручну роботу з процесів.
+skills_title: Навички
+skills:
+  - id: s1
+    title: LLM та RAG
+    text: OpenAI / Anthropic API, Ollama, LangChain, pgvector, Qdrant, prompt engineering, оцінка якості відповідей
+  - id: s2
+    title: Автоматизація
+    text: n8n, Make, Telegram Bot API, вебхуки, Google Workspace API
+  - id: s3
+    title: Розробка
+    text: Python, FastAPI, SQL, Docker, Git, Playwright
+experience_title: Досвід
+experience:
+  - id: e1
+    role: AI Automation Engineer
+    company: Acme Logistics (вигадана компанія)
+    meta: віддалено
+    period: 2024 — зараз
+    bullets:
+      - id: b1
+        text: Зробив RAG-асистента над базою інструкцій — відповіді з посиланням на джерело
+      - id: b2
+        text: Перевів 12 ручних процесів у n8n, звільнив близько 30 годин команди на тиждень
+    tech: Python, n8n, PostgreSQL, Docker
+  - id: e2
+    role: Python Developer
+    company: Example Studio (вигадана компанія)
+    meta: Україна
+    period: 2021 — 2024
+    bullets:
+      - id: b3
+        text: Скрапери й інтеграції з REST API для e-commerce клієнтів
+    tech: Python, Selenium, REST
+education_title: Освіта
+education:
+  - degree: Бакалавр, комп'ютерні науки
+    school: Приклад університет
+    meta: ""
+    period: 2017 — 2021
+certificates_title: Сертифікати
+certificates: []
+languages_title: Мови
+languages:
+  - "Українська — рідна"
+  - "Англійська — B2"

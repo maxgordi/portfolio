@@ -1,0 +1,11 @@
+{
+    "category_a": [
+        "example keyword one",
+        "example keyword two",
+        "example phrase three"
+    ],
+    "category_b": [
+        "sample term",
+        "another sample term"
+    ]
+}
